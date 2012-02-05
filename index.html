@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>three.js canvas - geometry - cube</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      body {
+        font-family: Monospace;
+        /*background-color: #f0f0f0;*/
+        margin: 0px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script src="Three.js"></script>
+    <script src="droid_sans_regular.typeface.js"></script>
+
+    <script>
+
+      var container;
+
+      var camera, scene, renderer;
+
+      var dirLight, pointLight;
+
+      var time = 0;
+
+      var mouseX = 0,
+          mouseY = 0;
+
+      var windowHalfX = window.innerWidth / 2;
+      var windowHalfY = window.innerHeight / 2;
+
+      init();
+      animate();
+
+      function init() {
+
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 1000 );
+        camera.position.z = 200;
+        scene.add( camera );
+
+        pointLight = new THREE.SpotLight(  );
+        pointLight.position.set( 0, 0, 0 );
+        pointLight.castShadow = true;
+        pointLight.shadowCameraFar = camera.far;
+        pointLight.shadowCameraFov = camera.fov;
+        pointLight.shadowMapWidth = pointLight.shadowMapHeight = 2048;
+        pointLight.shadowDarkness = 0.5;
+        scene.add( pointLight );
+
+        var background_geo = new THREE.PlaneGeometry(1000, 1000);
+        var background_mat = new THREE.MeshPhongMaterial({ color: 0xffffff, shading: THREE.SmoothShading, overdraw: true });
+        var background_mesh = new THREE.Mesh(background_geo, background_mat);
+        background_mesh.position.z = 0;
+        background_mesh.receiveShadow = true;
+        scene.add(background_mesh);
+
+        drawText("I am dark grey", 50, 0x333333)
+        drawText("I am red", 10, 0xff0000);
+        drawText("I am blue", -30, 0x0000ff);
+        drawText("I am Goldenrod", -70, 0xdaa520);
+
+        //renderer = new THREE.CanvasRenderer();
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+
+        container.appendChild( renderer.domElement );
+
+      }
+
+      function animate() {
+        requestAnimationFrame( animate );
+        render();
+      }
+
+      function render() {
+        if (time > 100) { time = 0 };
+        updateLight(time += 0.1);
+
+        renderer.render( scene, camera );
+      }
+
+      function updateLight(time) {
+        var ptime, x, y, z;
+        ptime = (time/100 - 0.5) * Math.PI;
+        x = Math.sin(ptime);
+        y = z = Math.cos(ptime);
+
+        pointLight.position.x = (x-0.5)*1000 + windowHalfX/2;
+        pointLight.position.y = (y-0.5)*500;
+        pointLight.position.z = (z-0.4)*200;
+        pointLight.color.setHSV(0.1, (1-z)/2 + 0.5, 1);
+        pointLight.intensity = z;
+      }
+
+      function center(object, container) {
+        object.computeBoundingBox();
+        container.position.x = -0.5 * ( object.boundingBox.max.x - object.boundingBox.min.x );
+      }
+
+      function drawText(txt, y, color) {
+        var geo, mesh;
+        geo = new THREE.TextGeometry( txt, {
+          size: 30,
+          height: 2,
+          curveSegments: 16,
+          font: 'droid sans',
+          weight: 'normal',
+          style: 'normal'
+        });
+        mat = new THREE.MeshPhongMaterial({
+          color: color,
+          shading: THREE.SmoothShading,
+          overdraw: true
+        });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.castShadow = mesh.receiveShadow = true;
+        mesh.position.y = y || 0;
+        center(geo, mesh);
+        scene.add(mesh);
+      }
+
+
+    </script>
+
+  </body>
+</html>
